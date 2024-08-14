@@ -1,39 +1,48 @@
-import { SvelteKitAuth } from '@auth/sveltekit';
+import { SvelteKitAuth } from "@auth/sveltekit";
 import GitHub from '@auth/sveltekit/providers/github';
-import dotenv from 'dotenv';
-import {getPlatformProxy} from 'wrangler';
-import { saveUserToDatabase } from '$lib/db';
+import { D1Adapter } from "@auth/d1-adapter";
+import { GITHUB_ID, GITHUB_SECRET, AUTH_SECRET } from '$env/static/private';
 
-// Load environment variables from .env file during development
-if (process.env.NODE_ENV !== 'production') {
-    dotenv.config();
-}
 export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
-    const dev = process.env.NODE_ENV !== 'production';
+
+    const getEnv = (key) => {
+        if (event.platform?.env.CF_PAGES === 'true') {
+            return event.platform?.env[key];
+        } else {
+            switch(key) {
+                case 'GITHUB_ID': return GITHUB_ID;
+                case 'GITHUB_SECRET': return GITHUB_SECRET;
+                case 'AUTH_SECRET': return AUTH_SECRET;
+                default: return undefined;
+            }
+        }
+    };
+
     const authOptions = {
         providers: [
             GitHub({
-                clientId: dev ? process.env.GITHUB_ID : event.platform?.env?.GITHUB_ID,
-                clientSecret: dev ? process.env.GITHUB_SECRET : event.platform?.env?.GITHUB_SECRET
+                clientId: getEnv('GITHUB_ID'),
+                clientSecret: getEnv('GITHUB_SECRET')
             })
         ],
-        secret: dev ? process.env.AUTH_SECRET : event.platform?.env?.AUTH_SECRET,
+        secret: getEnv('AUTH_SECRET'),
         trustHost: true,
+        adapter: D1Adapter(event.platform?.env.DB),
+        session: {
+            strategy: 'database',
+            maxAge: 30 * 24 * 60 * 60, // 30 days
+            updateAge: 24 * 60 * 60 // update session age every 24 hours
+        },
         callbacks: {
-            async signIn(data) {
-                const { env } = await getPlatformProxy();
-                const environment = dev ? env : event.platform?.env;
-                await saveUserToDatabase(environment, data.user);
-                return true;
-            },
-            async session({ session }) {
-                const { user } = session;
-                if (session?.user) {
-                    session.user.id = user.id;
+            async session({ session, token }) {
+                // Include the user ID (sub) in the session
+                if (token?.sub) {
+                    session.user.id = token.sub;
                 }
                 return session;
             }
         }
     };
+
     return authOptions;
 });
