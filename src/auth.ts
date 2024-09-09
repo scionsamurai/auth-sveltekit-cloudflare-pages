@@ -39,6 +39,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
                 if (token?.sub) {
                     session.user.id = token.sub;
                 }
+                // new branch
                 return session;
             }
         }
