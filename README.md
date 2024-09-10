@@ -42,7 +42,7 @@ Before using this code, ensure you have the following:
 
 1. Clone this repository:
    ```bash
-   git clone --branch with-r2-backup https://github.com/scionsamurai/auth-sveltekit-cloudflare-pages.git
+   git clone https://github.com/scionsamurai/auth-sveltekit-cloudflare-pages.git
    cd auth-sveltekit-cloudflare-pages
    git checkout with-r2-backup
    ```
@@ -89,13 +89,63 @@ Before using this code, ensure you have the following:
 
 ## Database Setup
 
-[The database setup remains the same as in the original README]
+1. Create a file named `update_users_schema.sql` with the following content:
 
-## Backup System Setup
+   ```sql
+   DROP TABLE IF EXISTS accounts;
+   DROP TABLE IF EXISTS "sessions";
+   DROP TABLE IF EXISTS users;
+   DROP TABLE IF EXISTS verification_tokens;
 
-1. Create a new file `src/routes/api/backup/+server.ts` for the backup API endpoint.
-2. Implement the TOTP authentication in `src/lib/TOTP.js`.
-3. Create a GitHub Actions workflow file at `.github/workflows/backup.yml` for automated backups.
+   CREATE TABLE IF NOT EXISTS "accounts" (
+     "id" TEXT NOT NULL,
+     "userId" TEXT NOT NULL DEFAULT NULL,
+     "type" TEXT NOT NULL DEFAULT NULL,
+     "provider" TEXT NOT NULL DEFAULT NULL,
+     "providerAccountId" TEXT NOT NULL DEFAULT NULL,
+     "refresh_token" TEXT DEFAULT NULL,
+     "access_token" TEXT DEFAULT NULL,
+     "expires_at" INTEGER DEFAULT NULL,
+     "token_type" TEXT DEFAULT NULL,
+     "scope" TEXT DEFAULT NULL,
+     "id_token" TEXT DEFAULT NULL,
+     "session_state" TEXT DEFAULT NULL,
+     "oauth_token_secret" TEXT DEFAULT NULL,
+     "oauth_token" TEXT DEFAULT NULL,
+     PRIMARY KEY (id)
+   );
+
+   CREATE TABLE IF NOT EXISTS "sessions" (
+     "id" TEXT NOT NULL,
+     "sessionToken" TEXT NOT NULL,
+     "userId" TEXT NOT NULL DEFAULT NULL,
+     "expires" DATETIME NOT NULL DEFAULT NULL, 
+     PRIMARY KEY (sessionToken)
+   );
+
+   CREATE TABLE IF NOT EXISTS "users" (
+     "id" TEXT NOT NULL DEFAULT '',
+     "name" TEXT DEFAULT NULL,
+     "email" TEXT DEFAULT NULL,
+     "emailVerified" DATETIME DEFAULT NULL,
+     "image" TEXT DEFAULT NULL, 
+     PRIMARY KEY (id)
+   );
+
+   CREATE TABLE IF NOT EXISTS "verification_tokens" (
+     "identifier" TEXT NOT NULL,
+     "token" TEXT NOT NULL DEFAULT NULL,
+     "expires" DATETIME NOT NULL DEFAULT NULL, 
+     PRIMARY KEY (token)
+   );
+   ```
+
+2. Execute the SQL file to set up the database schema:
+   ```bash
+   npx wrangler d1 execute my_sveltekit_db --file update_users_schema.sql
+   ```
+
+   Note: Add the `--remote` flag if you want to execute this on the remote database.
 
 ## Local Development
 
@@ -109,7 +159,26 @@ This command builds the project and starts the Wrangler Pages development server
 
 ## Deployment
 
-[The deployment process remains the same as in the original README]
+1. Connect your local repository to your GitHub repository:
+   ```bash
+   git remote add origin <your-github-repo-url>
+   ```
+
+2. Push your changes to GitHub:
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push -u origin main
+   ```
+
+3. Set up Cloudflare Pages:
+   - Log in to your Cloudflare account and navigate to the Pages section.
+   - Click "Create a project" and select your GitHub repository.
+   - Configure your build settings:
+     - Build command: `npm run build`
+     - Build output directory: `.svelte-kit/cloudflare`
+   - Add your environment variables in the Cloudflare Pages settings.
+   - Deploy your site.
 
 ## Usage
 
@@ -138,6 +207,6 @@ For local development, access the application at `http://localhost:5173`.
 
 For more detailed information on the implementation and concepts, please refer to the accompanying blog posts:
 1. [Setting Up SvelteKit with Cloudflare Pages, D1 Storage, and OAuth](https://www.jimscode.blog/posts/cloudflare-d1-oauth)
-2. [Implementing Secure Automated Backups for SvelteKit on Cloudflare](https://your-blog-url-here)
+2. [Implementing Secure Automated Backups for SvelteKit on Cloudflare](https://www.jimscode.blog/posts/sveltekit-cloudflare-backups)
 
 If you encounter any issues or have questions, please open an issue in this repository.
