@@ -1,0 +1,28 @@
+name: Monthly Backup
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Runs at midnight on the 1st of every month
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.13.1'
+
+      - name: Generate TOTP and Trigger Backup
+        env:
+          TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
+        run: |
+          TOKEN=$(node genTotp.js)
+          curl -X POST https://your-app.pages.dev/api/backup \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $TOKEN" \
+          -d '{"action": "backup"}'

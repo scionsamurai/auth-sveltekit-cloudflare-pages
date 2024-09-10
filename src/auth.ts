@@ -37,9 +37,12 @@ export const { handle, signIn, signOut } = SvelteKitAuth(async (event) => {
             async session({ session, token }) {
                 // Include the user ID (sub) in the session
                 if (token?.sub) {
-                    session.user.id = token.sub;
+                    session.user.id = token.sub;    
                 }
-                // new branch
+
+                // Check for Cloudflare Pages environment
+                session.dev = event.platform?.env.CF_PAGES;
+                
                 return session;
             }
         }
