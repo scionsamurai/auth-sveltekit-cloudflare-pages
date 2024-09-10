@@ -19,6 +19,8 @@ This repository contains the example code for the blog post titled **["Setting U
 - **Cloudflare Pages**: Fast and secure deployment of static sites and serverless functions.
 - **D1 Storage**: A lightweight SQL database solution by Cloudflare.
 - **OAuth Authentication**: Secure user authentication using GitHub.
+  
+**Note:** It is highly recommended to follow the blog post directly for the most up-to-date instructions and context. This repository serves as a reference for the blog posts. If you prefer to start from where the blog posts leave off, the following instructions may help.
 
 ## Prerequisites
 
