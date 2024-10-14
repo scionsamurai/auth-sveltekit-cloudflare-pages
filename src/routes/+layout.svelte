@@ -10,6 +10,8 @@
 		<button on:click={() => signOut()}>Sign out</button>
 	{:else}
 		<button on:click={() => signIn('github')}>Sign in with GitHub</button>
+		<p></p>
+		<button on:click={() => signIn('Google')}>Sign in with Google</button>
 	{/if}
 </nav>
 

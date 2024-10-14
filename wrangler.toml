@@ -16,10 +16,7 @@ pages_build_output_dir = ".svelte-kit/cloudflare"
 # Note: Use secrets to store sensitive data.
 # - https://developers.cloudflare.com/pages/functions/bindings/#secrets
 [vars]
-AUTH_SECRET = "github_auth_secret"
-AUTH_TRUST_HOST = "true"
-GITHUB_ID = "github_id_generated_for_oauth"
-GITHUB_SECRET = "secret_generated_with_id"
+
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#workers-ai
@@ -29,10 +26,9 @@ GITHUB_SECRET = "secret_generated_with_id"
 # Bind a D1 database. D1 is Cloudflare’s native serverless SQL database.
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#d1-databases
 [[d1_databases]]
-binding = "DB" # i.e. available in your Worker on env.DB
+binding = "DB"
 database_name = "my_sveltekit_db"
-database_id = "<your-database-id>"
-
+database_id = "342dcda3-70fa-4a97-b3be-6f3c37b5cad8"
 
 # Bind a Durable Object. Durable objects are a scale-to-zero compute primitive based on the actor model.
 # Durable Objects can live for as long as needed. Use these when you need a long-running "server", such as in realtime apps.
